@@ -4,6 +4,7 @@
 import argparse
 import os
 import sys
+from typing import Any, Iterable, Literal, List
 from pypdf import PdfReader, PdfWriter
 from pypdf.annotations import MarkupAnnotation
 # from pypdf.annotations import Highlight
@@ -11,35 +12,52 @@ from pypdf.generic import (
     ArrayObject, FloatObject, NumberObject, NameObject, TextStringObject, RectangleObject
 )
 
-annotations_to_remove = [
-    '/Text', '/FreeText', '/Line', '/Square', '/Circle', '/Polygon', '/PolyLine', '/Highlight',
-    '/Underline', '/Squiggly', '/StrikeOut', '/Caret', '/Stamp', '/Ink', '/Popup',
-    '/FileAttachment', '/Sound', '/Movie', '/Screen', '/Widget', '/PrinterMark', '/TrapNet',
-    '/Watermark', '/3D', '/Redact', '/Projection', '/RichMedia'
-]
+AnnotationListType = List[Literal[
+                                 '/Text', '/Link', '/FreeText',
+                                 '/Line', '/Square', '/Circle', '/Polygon', '/PolyLine',
+                                 '/Highlight', '/Underline', '/Squiggly', '/StrikeOut', '/Caret',
+                                 '/Stamp', '/Ink', '/Popup', '/FileAttachment', '/Sound', '/Movie',
+                                 '/Screen', '/Widget', '/PrinterMark', '/TrapNet', '/Watermark',
+                                 '/3D', '/Redact', '/Projection', '/RichMedia']]
 
-def eprint(*args, **kwargs): # For verbose messages
+annotations_to_remove : AnnotationListType = [
+                 '/Text',
+                 '/FreeText', '/Line',
+                 '/Square', '/Circle',
+                 '/Polygon', '/PolyLine',
+                 '/Highlight', '/Underline',
+                 '/Squiggly', '/StrikeOut',
+                 '/Caret', '/Stamp', '/Ink',
+                 '/Popup', '/FileAttachment',
+                 '/Sound', '/Movie',
+                 '/Screen', '/Widget',
+                 '/PrinterMark', '/TrapNet',
+                 '/Watermark', '/3D',
+                 '/Redact', '/Projection',
+                 '/RichMedia' ]
+
+def eprint(*args: Any, **kwargs: Any) -> None: # For verbose messages
     if main_args.verbose:
         print(*args, file=sys.stderr, **kwargs)
 
-def testing_copy(input_file, output_file):
+def testing_copy(input_file: str, output_file: str) -> None:
     eprint("## Testing a plain copy with PyPDF")
     writer = PdfWriter(clone_from=input_file)
     with open(output_file, "wb") as fp:
         writer.write(fp)
 
-def strip_annotations(input_file, output_file):
+def strip_annotations(input_file: str, output_file: str) -> None:
     eprint("## Stripping annotations (except Links)")
     writer = PdfWriter(clone_from=input_file)
     writer.remove_annotations(annotations_to_remove)
     with open(output_file, "wb") as fp:
         writer.write(fp)
 
-def extract_annotations(input_file, output_file):
+def extract_annotations(input_file: str, output_file: str) -> None:
     eprint("## Extracting annotations")
     reader = PdfReader(input_file)
     pages = reader.pages
-    annotation_list = []
+    annotation_list : List[List[Any]] = []
 
     for pagenum, page in enumerate(pages):
         eprint("==== Page", pagenum, " ====")
@@ -70,7 +88,7 @@ def extract_annotations(input_file, output_file):
         json_annotations.write("]")
 
 
-def insert_annotations(input_file, output_file, annotations):
+def insert_annotations(input_file: str, output_file: str, annotations: str) -> None:
     eprint("## Inserting annotations")
     writer = PdfWriter(clone_from=input_file)
     with open(annotations, encoding='utf-8') as f:
