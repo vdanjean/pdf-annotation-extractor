@@ -1,0 +1,22 @@
+Source: pdf-annotation-extractor
+Section: utils
+Priority: optional
+Maintainer: Vincent Danjean <arnaud.legrand@imag.fr>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-python,
+ python3,
+Standards-Version: 4.7.0
+Homepage: https://github.com/alegrand/pdf-annotation-extractor/
+Vcs-Browser: https://github.com/alegrand/pdf-annotation-extractor
+Vcs-Git: https://github.com/alegrand/pdf-annotation-extractor.git
+
+Package: pdf-annotation-extractor
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+Description: extract, strip, or insert annotations in PDF files
+ A simple Python script to manage (extract, strip, insert) annotations in PDF
+ files.

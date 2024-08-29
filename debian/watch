@@ -1,0 +1,5 @@
+version=4
+# GitHub hosted projects.
+opts="filenamemangle=s%(?:.*?)?v?(@ANY_VERSION@@ARCHIVE_EXT@)%@PACKAGE@-$1%" \
+    https://github.com/alegrand/pdf-annotation-extractor/tags \
+    (?:.*?/)v?@ANY_VERSION@@ARCHIVE_EXT@

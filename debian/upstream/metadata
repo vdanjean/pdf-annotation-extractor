@@ -1,0 +1,8 @@
+# See https://wiki.debian.org/UpstreamMetadata for more info/fields.
+
+Bug-Database: https://github.com/alegrand/pdf-annotation-extractor/issues
+Bug-Submit: https://github.com/alegrand/pdf-annotation-extractor/issues/new
+#Changelog: https://github.com/alegrand/pdf-annotation-extractor/blob/master/CHANGES
+Documentation: https://github.com/alegrand/pdf-annotation-extractor/wiki
+Repository-Browse: https://github.com/alegrand/pdf-annotation-extractor
+Repository: https://github.com/alegrand/pdf-annotation-extractor.git
