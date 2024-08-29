@@ -1,10 +1,15 @@
 #! /usr/bin/env python3
+"""Program to extract, strip, or insert annotations in PDF files"""
+
 import argparse
-import os, sys
+import os
+import sys
 from pypdf import PdfReader, PdfWriter
 from pypdf.annotations import *
 # from pypdf.annotations import Highlight
-from pypdf.generic import ArrayObject, FloatObject, NumberObject, NameObject, TextStringObject, RectangleObject
+from pypdf.generic import (
+    ArrayObject, FloatObject, NumberObject, NameObject, TextStringObject, RectangleObject
+)
 
 filename_pdf_input = "/tmp/test.pdf"
 filename_pdf_output_stripped = "/tmp/test_stripped.pdf"
@@ -12,10 +17,15 @@ filename_pdf_output_reannotated = "/tmp/test_reannotated.pdf"
 filename_pdf_output_copy = "/tmp/test_copy.pdf"
 filename_json_annotations = "/tmp/annotations.json"
 
-annotations_to_remove = ['/Text', '/FreeText', '/Line', '/Square', '/Circle', '/Polygon', '/PolyLine', '/Highlight', '/Underline', '/Squiggly', '/StrikeOut', '/Caret', '/Stamp', '/Ink', '/Popup', '/FileAttachment', '/Sound', '/Movie', '/Screen', '/Widget', '/PrinterMark', '/TrapNet', '/Watermark', '/3D', '/Redact', '/Projection', '/RichMedia']
+annotations_to_remove = [
+    '/Text', '/FreeText', '/Line', '/Square', '/Circle', '/Polygon', '/PolyLine', '/Highlight',
+    '/Underline', '/Squiggly', '/StrikeOut', '/Caret', '/Stamp', '/Ink', '/Popup',
+    '/FileAttachment', '/Sound', '/Movie', '/Screen', '/Widget', '/PrinterMark', '/TrapNet',
+    '/Watermark', '/3D', '/Redact', '/Projection', '/RichMedia'
+]
 
 def eprint(*args, **kwargs): # For verbose messages
-    if(main_args.verbose):
+    if main_args.verbose:
         print(*args, file=sys.stderr, **kwargs)
 
 def testing_copy(input=filename_pdf_input, output=filename_pdf_output_copy):
@@ -37,7 +47,7 @@ def extract_annotations(input=filename_pdf_input, output=filename_json_annotatio
     eprint("## Extracting annotations")
     reader = PdfReader(filename_pdf_input)
     pages = reader.pages
-    annotation_list = [];
+    annotation_list = []
 
     for pagenum in range(pages.length_function()):
         eprint("==== Page", pagenum, " ====")
@@ -53,23 +63,25 @@ def extract_annotations(input=filename_pdf_input, output=filename_json_annotatio
                     annotation_list[pagenum].append(obj)
 
     with open(filename_json_annotations , "w" ) as json_annotations:
-        json_annotations.write("[\n");
+        json_annotations.write("[\n")
         for p in annotation_list:
             # breakpoint()
             json_annotations.write("   [")
             for a in p:
-                # Remove reference to page objects, they would not make sense anymore once dumped in JSON
+                # Remove reference to page objects, they would not
+                # make sense anymore once dumped in JSON
                 if '/P' in a:
                     del a['/P']
                 if '/AP' in a:
                     del a['/AP']
                 json_annotations.write("      " + repr(a) + ",\n")
             json_annotations.write("],\n")
-        json_annotations.write("]");
+        json_annotations.write("]")
         json_annotations.close()
 
 
-def insert_annotations(input=filename_json_annotations, output=filename_pdf_output_stripped, annotations=filename_json_annotations):
+def insert_annotations(input=filename_json_annotations, output=filename_pdf_output_stripped,
+                       annotations=filename_json_annotations):
     eprint("## Inserting annotations")
     writer = PdfWriter(clone_from=filename_pdf_output_stripped)
     with open(annotations) as f:
@@ -87,7 +99,9 @@ def insert_annotations(input=filename_json_annotations, output=filename_pdf_outp
                 if k == '/Rect':
                     annotation[NameObject(k)] = RectangleObject(v)
                     continue
-                if k in ['/Subtype', '/Type', '/IT']: # list obtained from reading _markup_annotations.py
+                if k in ['/Subtype', '/Type', '/IT']: # list obtained
+                                                      # from reading
+                                                      # _markup_annotations.py
                     annotation[NameObject(k)] = NameObject(v)
                     continue
                 if type(v) == str:
@@ -109,18 +123,23 @@ def insert_annotations(input=filename_json_annotations, output=filename_pdf_outp
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='pdf_annotation_extractor',
                     description='''This script allows to:
-  * Extract annotations from a PDF: pdf_annotation_extractor extract doc_annotated.pdf annotations.json
-  * Discard annotations from a PDF: pdf_annotation_extractor strip   doc_annotated.pdf doc_stripped.pdf
-  * Insert  annotations into a PDF: pdf_annotation_extractor insert --annotations=annotations.json doc_stripped.pdf doc_annotated.pdf ''',
+  * Extract annotations from a PDF:
+    pdf_annotation_extractor extract doc_annotated.pdf annotations.json
+  * Discard annotations from a PDF:
+    pdf_annotation_extractor strip   doc_annotated.pdf doc_stripped.pdf
+  * Insert  annotations into a PDF:
+    pdf_annotation_extractor insert -a annotations.json doc_stripped.pdf doc_annotated.pdf''',
                                      formatter_class=argparse.RawTextHelpFormatter
                     )
-    parser.add_argument('action', choices=['extract','strip','insert'], help='Action') # positional argument
+    parser.add_argument('action',
+                        choices=['extract','strip','insert'], help='Action') # positional argument
     parser.add_argument('input', help='PDF Input file')                  # positional argument
     parser.add_argument('output', help='PDF|JSON Output file')           # positional argument
     parser.add_argument('-a', '--annotations', help='Input annotation file')
-    parser.add_argument('-v', '--verbose', action='store_true', help="Display more information on what's happening") # on/off flag
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help="Display more information on what's happening") # on/off flag
     main_args = parser.parse_args()
-    
+
     if main_args.action == 'extract':
         extract_annotations(input=main_args.input, output=main_args.output)
     elif main_args.action == 'strip':
@@ -129,5 +148,6 @@ if __name__ == '__main__':
         if main_args.annotations == '' or not os.path.exists(main_args.annotations):
             eprint("The 'insert' action requires a valid JSON annotation file")
             parse_main_args.print_help()
-            exit(0)
-        insert_annotations(input=main_args.input, output=main_args.output, annotations=main_args.annotations)
+            sys.exit(0)
+        insert_annotations(input=main_args.input,
+                           output=main_args.output, annotations=main_args.annotations)
