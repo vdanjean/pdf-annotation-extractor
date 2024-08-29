@@ -40,71 +40,71 @@ def extract_annotations(input=filename_pdf_input, output=filename_json_annotatio
     annotation_list = [];
 
     for pagenum in range(pages.length_function()):
-          eprint("==== Page", pagenum, " ====")
-          page=pages[pagenum]
+        eprint("==== Page", pagenum, " ====")
+        page=pages[pagenum]
 
-          # Save useful annotations
-          annotation_list.append([])
-          if "/Annots" in page:
-                for annot in page["/Annots"]:
-                      obj = annot.get_object()
-                      if obj["/Subtype"] in annotations_to_remove:
-                            # breakpoint()
-                            annotation_list[pagenum].append(obj)
+        # Save useful annotations
+        annotation_list.append([])
+        if "/Annots" in page:
+            for annot in page["/Annots"]:
+                obj = annot.get_object()
+                if obj["/Subtype"] in annotations_to_remove:
+                    # breakpoint()
+                    annotation_list[pagenum].append(obj)
 
     with open(filename_json_annotations , "w" ) as json_annotations:
-          json_annotations.write("[\n");
-          for p in annotation_list:
-                # breakpoint()
-                json_annotations.write("   [")
-                for a in p:
-                      # Remove reference to page objects, they would not make sense anymore once dumped in JSON
-                      if '/P' in a:
-                            del a['/P']
-                      if '/AP' in a:
-                            del a['/AP']
-                      json_annotations.write("      " + repr(a) + ",\n")
-                json_annotations.write("],\n")
-          json_annotations.write("]");
-          json_annotations.close()
+        json_annotations.write("[\n");
+        for p in annotation_list:
+            # breakpoint()
+            json_annotations.write("   [")
+            for a in p:
+                # Remove reference to page objects, they would not make sense anymore once dumped in JSON
+                if '/P' in a:
+                    del a['/P']
+                if '/AP' in a:
+                    del a['/AP']
+                json_annotations.write("      " + repr(a) + ",\n")
+            json_annotations.write("],\n")
+        json_annotations.write("]");
+        json_annotations.close()
 
 
 def insert_annotations(input=filename_json_annotations, output=filename_pdf_output_stripped, annotations=filename_json_annotations):
     eprint("## Inserting annotations")
     writer = PdfWriter(clone_from=filename_pdf_output_stripped)
     with open(annotations) as f:
-          annotation_list = eval(f.read())
-          f.close()
+        annotation_list = eval(f.read())
+        f.close()
 
     for pagenum in range(len(annotation_list)):
-          # breakpoint()
-          for a in annotation_list[pagenum]:
-                annotation = MarkupAnnotation()
-                writer.add_annotation(page_number=pagenum, annotation=annotation)
-                for k, v in a.items():
-                      if v == '':
-                            continue
-                      if k == '/Rect':
-                            annotation[NameObject(k)] = RectangleObject(v)
-                            continue
-                      if k in ['/Subtype', '/Type', '/IT']: # list obtained from reading _markup_annotations.py
-                            annotation[NameObject(k)] = NameObject(v)
-                            continue
-                      if type(v) == str:
-                            annotation[NameObject(k)] = TextStringObject(v)
-                      elif type(v) == int:
-                            annotation[NameObject(k)] = NumberObject(v)
-                      elif type(v) == float:
-                            annotation[NameObject(k)] = FloatObject(v)
-                      elif type(v) == list:
-                            annotation[NameObject(k)] = ArrayObject([FloatObject(x) for x in v])
-                      else:
-                            print("Unhandled (yet) type", type(v), file=sys.stderr)
+        # breakpoint()
+        for a in annotation_list[pagenum]:
+            annotation = MarkupAnnotation()
+            writer.add_annotation(page_number=pagenum, annotation=annotation)
+            for k, v in a.items():
+                if v == '':
+                    continue
+                if k == '/Rect':
+                    annotation[NameObject(k)] = RectangleObject(v)
+                    continue
+                if k in ['/Subtype', '/Type', '/IT']: # list obtained from reading _markup_annotations.py
+                    annotation[NameObject(k)] = NameObject(v)
+                    continue
+                if type(v) == str:
+                    annotation[NameObject(k)] = TextStringObject(v)
+                elif type(v) == int:
+                    annotation[NameObject(k)] = NumberObject(v)
+                elif type(v) == float:
+                    annotation[NameObject(k)] = FloatObject(v)
+                elif type(v) == list:
+                    annotation[NameObject(k)] = ArrayObject([FloatObject(x) for x in v])
+                else:
+                    print("Unhandled (yet) type", type(v), file=sys.stderr)
 
     with open(filename_pdf_output_reannotated, "wb") as fp:
-          breakpoint
-          writer.write(fp)
-          fp.close()
+        breakpoint
+        writer.write(fp)
+        fp.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='pdf_annotation_extractor',
