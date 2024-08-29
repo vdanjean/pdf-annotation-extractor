@@ -27,7 +27,6 @@ def testing_copy(input_file, output_file):
     writer = PdfWriter(clone_from=input_file)
     with open(output_file, "wb") as fp:
         writer.write(fp)
-        fp.close()
 
 def strip_annotations(input_file, output_file):
     eprint("## Stripping annotations (except Links)")
@@ -35,7 +34,6 @@ def strip_annotations(input_file, output_file):
     writer.remove_annotations(annotations_to_remove)
     with open(output_file, "wb") as fp:
         writer.write(fp)
-        fp.close()
 
 def extract_annotations(input_file, output_file):
     eprint("## Extracting annotations")
@@ -71,7 +69,6 @@ def extract_annotations(input_file, output_file):
                 json_annotations.write("      " + repr(a) + ",\n")
             json_annotations.write("],\n")
         json_annotations.write("]")
-        json_annotations.close()
 
 
 def insert_annotations(input_file, output_file, annotations):
@@ -79,7 +76,6 @@ def insert_annotations(input_file, output_file, annotations):
     writer = PdfWriter(clone_from=input_file)
     with open(annotations, encoding='utf-8') as f:
         annotation_list = eval(f.read())
-        f.close()
 
     for pagenum, annotations_in_page in enumerate(annotation_list):
         # breakpoint()
@@ -110,7 +106,6 @@ def insert_annotations(input_file, output_file, annotations):
 
     with open(output_file, "wb") as fp:
         writer.write(fp)
-        fp.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='pdf_annotation_extractor',
