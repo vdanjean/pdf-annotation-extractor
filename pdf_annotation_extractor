@@ -5,7 +5,7 @@ import argparse
 import os
 import sys
 from pypdf import PdfReader, PdfWriter
-from pypdf.annotations import *
+from pypdf.annotations import MarkupAnnotation
 # from pypdf.annotations import Highlight
 from pypdf.generic import (
     ArrayObject, FloatObject, NumberObject, NameObject, TextStringObject, RectangleObject
@@ -56,7 +56,7 @@ def extract_annotations(input_file, output_file):
                     # breakpoint()
                     annotation_list[pagenum].append(obj)
 
-    with open(output_file, "w" ) as json_annotations:
+    with open(output_file, "w", encoding='utf-8') as json_annotations:
         json_annotations.write("[\n")
         for p in annotation_list:
             # breakpoint()
@@ -77,13 +77,13 @@ def extract_annotations(input_file, output_file):
 def insert_annotations(input_file, output_file, annotations):
     eprint("## Inserting annotations")
     writer = PdfWriter(clone_from=input_file)
-    with open(annotations) as f:
+    with open(annotations, encoding='utf-8') as f:
         annotation_list = eval(f.read())
         f.close()
 
-    for pagenum in range(len(annotation_list)):
+    for pagenum, annotations_in_page in enumerate(annotation_list):
         # breakpoint()
-        for a in annotation_list[pagenum]:
+        for a in annotations_in_page:
             annotation = MarkupAnnotation()
             writer.add_annotation(page_number=pagenum, annotation=annotation)
             for k, v in a.items():
@@ -97,19 +97,18 @@ def insert_annotations(input_file, output_file, annotations):
                                                       # _markup_annotations.py
                     annotation[NameObject(k)] = NameObject(v)
                     continue
-                if type(v) == str:
+                if isinstance(v, str):
                     annotation[NameObject(k)] = TextStringObject(v)
-                elif type(v) == int:
+                elif isinstance(v, int):
                     annotation[NameObject(k)] = NumberObject(v)
-                elif type(v) == float:
+                elif isinstance(v, float):
                     annotation[NameObject(k)] = FloatObject(v)
-                elif type(v) == list:
+                elif isinstance(v, list):
                     annotation[NameObject(k)] = ArrayObject([FloatObject(x) for x in v])
                 else:
                     print("Unhandled (yet) type", type(v), file=sys.stderr)
 
     with open(output_file, "wb") as fp:
-        breakpoint
         writer.write(fp)
         fp.close()
 
@@ -138,9 +137,9 @@ if __name__ == '__main__':
     elif main_args.action == 'strip':
         strip_annotations(input_file=main_args.input, output_file=main_args.output)
     else:
-        if main_args.annotations == '' or not os.path.exists(main_args.annotations):
+        if main_args.annotations is None or not os.path.exists(main_args.annotations):
             eprint("The 'insert' action requires a valid JSON annotation file")
-            parse_main_args.print_help()
+            parser.print_help()
             sys.exit(0)
         insert_annotations(input_file=main_args.input,
                            output_file=main_args.output,
