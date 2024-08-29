@@ -11,12 +11,6 @@ from pypdf.generic import (
     ArrayObject, FloatObject, NumberObject, NameObject, TextStringObject, RectangleObject
 )
 
-filename_pdf_input = "/tmp/test.pdf"
-filename_pdf_output_stripped = "/tmp/test_stripped.pdf"
-filename_pdf_output_reannotated = "/tmp/test_reannotated.pdf"
-filename_pdf_output_copy = "/tmp/test_copy.pdf"
-filename_json_annotations = "/tmp/annotations.json"
-
 annotations_to_remove = [
     '/Text', '/FreeText', '/Line', '/Square', '/Circle', '/Polygon', '/PolyLine', '/Highlight',
     '/Underline', '/Squiggly', '/StrikeOut', '/Caret', '/Stamp', '/Ink', '/Popup',
@@ -28,24 +22,24 @@ def eprint(*args, **kwargs): # For verbose messages
     if main_args.verbose:
         print(*args, file=sys.stderr, **kwargs)
 
-def testing_copy(input=filename_pdf_input, output=filename_pdf_output_copy):
+def testing_copy(input_file, output_file):
     eprint("## Testing a plain copy with PyPDF")
-    writer = PdfWriter(clone_from=input)
-    with open(output, "wb") as fp:
+    writer = PdfWriter(clone_from=input_file)
+    with open(output_file, "wb") as fp:
         writer.write(fp)
         fp.close()
 
-def strip_annotations(input=filename_pdf_input, output=filename_pdf_output_stripped):
+def strip_annotations(input_file, output_file):
     eprint("## Stripping annotations (except Links)")
-    writer = PdfWriter(clone_from=input)
+    writer = PdfWriter(clone_from=input_file)
     writer.remove_annotations(annotations_to_remove)
-    with open(output, "wb") as fp:
+    with open(output_file, "wb") as fp:
         writer.write(fp)
         fp.close()
 
-def extract_annotations(input=filename_pdf_input, output=filename_json_annotations):
+def extract_annotations(input_file, output_file):
     eprint("## Extracting annotations")
-    reader = PdfReader(filename_pdf_input)
+    reader = PdfReader(input_file)
     pages = reader.pages
     annotation_list = []
 
@@ -62,7 +56,7 @@ def extract_annotations(input=filename_pdf_input, output=filename_json_annotatio
                     # breakpoint()
                     annotation_list[pagenum].append(obj)
 
-    with open(filename_json_annotations , "w" ) as json_annotations:
+    with open(output_file, "w" ) as json_annotations:
         json_annotations.write("[\n")
         for p in annotation_list:
             # breakpoint()
@@ -80,10 +74,9 @@ def extract_annotations(input=filename_pdf_input, output=filename_json_annotatio
         json_annotations.close()
 
 
-def insert_annotations(input=filename_json_annotations, output=filename_pdf_output_stripped,
-                       annotations=filename_json_annotations):
+def insert_annotations(input_file, output_file, annotations):
     eprint("## Inserting annotations")
-    writer = PdfWriter(clone_from=filename_pdf_output_stripped)
+    writer = PdfWriter(clone_from=input_file)
     with open(annotations) as f:
         annotation_list = eval(f.read())
         f.close()
@@ -115,7 +108,7 @@ def insert_annotations(input=filename_json_annotations, output=filename_pdf_outp
                 else:
                     print("Unhandled (yet) type", type(v), file=sys.stderr)
 
-    with open(filename_pdf_output_reannotated, "wb") as fp:
+    with open(output_file, "wb") as fp:
         breakpoint
         writer.write(fp)
         fp.close()
@@ -141,13 +134,14 @@ if __name__ == '__main__':
     main_args = parser.parse_args()
 
     if main_args.action == 'extract':
-        extract_annotations(input=main_args.input, output=main_args.output)
+        extract_annotations(input_file=main_args.input, output_file=main_args.output)
     elif main_args.action == 'strip':
-        strip_annotations(input=main_args.input, output=main_args.output)
+        strip_annotations(input_file=main_args.input, output_file=main_args.output)
     else:
         if main_args.annotations == '' or not os.path.exists(main_args.annotations):
             eprint("The 'insert' action requires a valid JSON annotation file")
             parse_main_args.print_help()
             sys.exit(0)
-        insert_annotations(input=main_args.input,
-                           output=main_args.output, annotations=main_args.annotations)
+        insert_annotations(input_file=main_args.input,
+                           output_file=main_args.output,
+                           annotations=main_args.annotations)
