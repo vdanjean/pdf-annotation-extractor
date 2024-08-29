@@ -14,7 +14,8 @@ A simple python script to manage (extract, strip, insert) annotations in PDF fil
 
 Install the `python3-pypdf` Debian package, which is a pure-Python
 library (it should thus be very to install whichever your OS) to
-manipulate PDF files. Then tangle this file (in Emacs/org-mode, with `C-c C-v C-t`) to get the `/tmp/pdf_annotation_extractor` script, which you should move to your `~/bin/` or any other directory in your `$PATH`.
+manipulate PDF files. Then copy the  `pdf_annotation_extractor`
+script, in a directory of your `$PATH`.
 
 
 <a id="org205e6ba"></a>
