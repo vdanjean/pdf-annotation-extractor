@@ -41,9 +41,8 @@ def extract_annotations(input_file, output_file):
     pages = reader.pages
     annotation_list = []
 
-    for pagenum in range(pages.length_function()):
+    for pagenum, page in enumerate(pages):
         eprint("==== Page", pagenum, " ====")
-        page=pages[pagenum]
 
         # Save useful annotations
         annotation_list.append([])
